@@ -25,11 +25,10 @@ import discovery.samplers.numpyro as ds_numpyro
 
 
 # Read nanograv pulsars
-# if not os.path.exists("../data/"):
-#     print("\nError: 'data' folder not found in parent directory!!\n")
-#     exit(0)
-# allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('../data/*-[JB]*.feather'))]
-allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('/home/daniele/works/fab_pta/discovery/data/*-[JB]*.feather'))]
+if not os.path.exists("../data/"):
+    print("\nError: 'data' folder not found in parent directory!!\n")
+    exit(0)
+allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('../data/*-[JB]*.feather'))]
 
 psr = allpsrs[0]
 

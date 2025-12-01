@@ -36,11 +36,10 @@ from flowjax.distributions import StandardNormal
 
 # Get the 15yr nanograv dataset
 
-# if not os.path.exists("../data/"):
-#     print("\nError: 'data' folder not found in parent directory!!\n")
-#     exit(0)
-# allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('../data/*-[JB]*.feather'))]
-allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('/home/daniele/works/fab_pta/discovery/data/*-[JB]*.feather'))]
+if not os.path.exists("../data/"):
+    print("\nError: 'data' folder not found in parent directory!!\n")
+    exit(0)
+allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('../data/*-[JB]*.feather'))]
 
 # Run with fewer pulsars to converge on GPU
 allpsrs = allpsrs[:5]

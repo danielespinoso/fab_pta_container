@@ -36,11 +36,10 @@ importlib.reload(ds)
 
 # Load EPTA DR2 data
 
-# if not os.path.exists("../data/"):
-#     print("\nError: 'data' folder not found in parent directory!!\n")
-#     exit(0)
-# allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('../data/epta_dr2/*.feather'))]
-allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('/home/daniele/works/fab_pta/discovery/data/epta_dr2/*.feather'))]
+if not os.path.exists("../data/"):
+    print("\nError: 'data' folder not found in parent directory!!\n")
+    exit(0)
+allpsrs = [ds.Pulsar.read_feather(psrfile) for psrfile in sorted(glob.glob('../data/epta_dr2/*.feather'))]
 
 # We'll use only five pulsars for speed.
 psrs = allpsrs[0:5]
