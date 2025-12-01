@@ -1,0 +1,148 @@
+name: discovery-gpu-env
+channels:
+  - conda-forge
+  - nvidia
+  - esri
+  - demorest
+
+dependencies:
+  # Core Python
+  - python=3.10
+
+  # CUDA libraries
+  - cudatoolkit        # Let conda pick a compatible version
+  - cudnn              # Required by TF, PyTorch, etc.
+
+  # Common data-science / notebook packages
+  - ipython
+  - jupyter
+  - jupyterlab
+  - notebook
+  - ipywidgets
+
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - scikit-sparse
+  - matplotlib
+  - seaborn
+  - statsmodels
+  - dask
+  - distributed
+  - bokeh
+  - holoviews
+  - hvplot
+  - xarray
+
+  # Packaging & environment tools
+  - conda
+  - pip
+  - setuptools
+  - wheel
+
+  # Other frequently used libraries
+  - numba
+  - sympy
+  - statsmodels
+  - sqlalchemy
+  - black
+  - flake8
+  - pytest
+
+  # Astronomy / MCMC / Tools
+  - tempo2
+  - pyerfa
+  - pytables
+  - suitesparse
+  - ptmcmcsampler
+  - wand
+  - marshmallow
+  - cython
+  - healpy
+  - jplephem
+  - ephem
+  - healpy
+  - jplephem
+  - ephem
+  - astropy
+  - h5py
+  - corner
+  - pint-pulsar>=0.9
+  - dynesty
+  - emcee
+  - ephem
+  - schwimmbad
+  - fastprogress
+  - bilby
+  - libstempo
+  - pgplot
+  - pint-pal>=0.1.0
+  - acor>=1.1.1
+  - pypulse>=0.1.1
+  - gitpython
+
+  # JAX + GPU support # Apparently doesn't work with conda. So moved to pip.
+  # "jax" and "jaxlib" from conda-forge can detect GPU if cudatoolkit/cudnn are present.
+  - jax
+  # - jaxlib[cuda12]
+
+  # TensorFlow (GPU build)
+  - tensorflow
+  - tensorboard
+  - tensorboard-data-server
+  - esri:tensorflow-io-gcs-filesystem
+  - tensorflow-probability
+
+  # PyTorch (GPU build)
+  # Depending on your platform, conda may install either CPU or GPU builds automatically.
+  - pytorch
+  - torchvision
+  - torchaudio
+
+  # Additional packages
+  - absl-py
+  - arrow
+  - blackjax
+  - chex
+  - configparser
+  - dm-tree
+  - equinox
+  - etils
+  - flatbuffers
+  - gast
+  - google-pasta
+  - grpcio
+  - jaxopt
+  - jaxtyping
+  - line_profiler
+  - mako
+  - ml_dtypes
+  - mpld3
+  - multiprocess
+  - numpyro
+  - opt_einsum
+  - optax
+  - optree
+  - scikit-sparse
+  - termcolor
+  - webcolors
+
+  # PIP-only packages (no known conda feedstock)
+  - pip:
+      - jaxlib[cuda12]
+      - flowjax
+      - fqdn
+      - isoduration
+      - jaxns
+      - namex
+      - pairing
+      - paramax
+      - safe-netrc
+      - types-python-dateutil
+      - uri-template
+      - git+https://github.com/nanograv/pint_pal@main
+      - git+https://github.com/nanograv/enterprise
+      - git+https://github.com/nanograv/discovery
+      - git+https://github.com/nanograv/enterprise_extensions
+

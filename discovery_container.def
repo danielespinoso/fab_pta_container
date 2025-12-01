@@ -1,0 +1,131 @@
+Bootstrap: docker
+From: ghcr.io/nvidia/jax:base
+
+%labels
+    Author Daniele Spinoso
+    Version v0.0.1
+    Platform SingularityCE
+    Software Tempo2 Enterprise Discovery cfitsio
+    PythonVersion 3.10
+
+%files
+    # Copy discovery-gpu.yml (the conda environment definition file) into the container
+    discovery-gpu.yml /tmp/discovery-gpu.yml
+
+%post
+    # system updates
+    apt-get update && apt-get install -y --no-install-recommends \
+        wget \
+        bzip2 \
+        ca-certificates \
+        git \
+        build-essential \
+        && rm -rf /opt/lib/apt/lists/*
+
+    # ----------------------------------------------------------------
+    # Here we install Miniconda
+    # ----------------------------------------------------------------
+    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $SINGULARITY_CONTAINER/tmp/miniconda.sh
+    bash $SINGULARITY_CONTAINER/tmp/miniconda.sh -b -p /opt/conda
+    rm -f $SINGULARITY_CONTAINER/tmp/miniconda.sh
+
+    # Set up conda-forge, nvidia channels (for GPUs)
+    /opt/conda/bin/conda config --system --add channels conda-forge
+    /opt/conda/bin/conda config --system --add channels nvidia
+    /opt/conda/bin/conda config --system --add channels defaults
+
+    # accepting the Terms Of Service of anaconda for defautls channels
+    /opt/conda/bin/conda tos accept
+
+    # ----------------------------------------------------------------
+    # Create the environment conda discovery-gpu from the yml file
+    # ----------------------------------------------------------------
+    /opt/conda/bin/conda env create -f $SINGULARITY_CONTAINER/tmp/discovery-gpu.yml
+
+    # Clean up conda caches
+    /opt/conda/bin/conda clean --all --yes
+
+%environment
+    # This section is executed for *every* shell/exec/run within the
+    # container so we automatically activate the environment each time.
+    source /opt/conda/etc/profile.d/conda.sh
+    conda activate discovery-gpu-env
+
+    # Here we associate conda's python to PATH so that
+    # "python" uses the discovery-gpu environment
+    export PATH="/opt/conda/envs/discovery-gpu-env/bin:${PATH}"
+
+    # Here we set the runtime environment variables of this container
+    export SINGULARITY_SHELL=/bin/bash
+    export XDG_CACHE_HOME=/opt/pulsar/
+    export XDG_CONFIG_HOME=/opt/pulsar/
+
+    export PGPLOT_DIR=/usr/lib/pgplot5
+    export PGPLOT_FONT=/usr/lib/pgplot5/grfont.dat
+
+    export TEMPO2=/opt/pulsar/tempo2
+    export TEMPO2_PREFIX=${TEMPO2}
+    export PATH=$PATH:$TEMPO2/bin
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TEMPO2_PREFIX
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TEMPO2_PREFIX/lib
+    export C_INCLUDE_PATH=$C_INCLUDE_PATH:$TEMPO2_PREFIX/include
+    
+%post
+    mkdir -p ${SINGULARITY_ROOTFS}/Workspace
+    mkdir -p ${SINGULARITY_ROOTFS}/DataStorage
+    mkdir -p ${XDG_CACHE_HOME}/.astropy
+    mkdir -p ${XDG_CONFIG_HOME}/.astropy
+
+    export TEMPO2=/opt/pulsar/tempo2
+    export TEMPO2_PREFIX=${TEMPO2}
+    export PATH=$TEMPO2/bin:${TEMPO2}:$PATH
+
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TEMPO2}
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TEMPO2}/lib
+
+    export TZ=Europe/Rome
+
+    export PGPLOT_DIR=/usr/lib/pgplot5
+    export PGPLOT_FONT=/usr/lib/pgplot5/grfont.dat
+
+
+    apt-get -y update
+    apt-get -y install automake autoconf libtool cmake make build-essential
+    apt-get -y --no-install-recommends install build-essential wget cmake make libfftw3* zlib1g-dev libblas3 libblas-dev liblapack3 liblapack-dev git
+    apt-get -y --no-install-recommends install gfortran dpkg-dev libc6-dev libc-dev sed tmux emacs-nox vim nano libgsl27 libgslcblas0 libgsl-dev 
+    apt-get -y --no-install-recommends install libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev liblzma-dev libffi-dev libjpeg-dev libncurses5-dev libnss3-dev libreadline-dev wget pgplot5
+    apt-get -y --no-install-recommends install openmpi-bin libopenmpi-dev
+    apt-get -y --no-install-recommends install pdftk latex2html wkhtmltopdf
+
+    apt-get install -y openmpi-bin libopenmpi-dev # OpenMPI for PolyChord sampler
+    
+    # cd /
+    # mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-3.47.tar.gz
+    # mkdir -p /var/tmp && tar -x -f /var/tmp/cfitsio-3.47.tar.gz -C /var/tmp -z
+    # cd /var/tmp/cfitsio-3.47 &&   ./configure --prefix=/usr/local --enable-reentrant --enable-sse2
+    # make -j$(nproc)
+    # make -j$(nproc) install
+    # rm -rf /var/tmp/cfitsio-3.47 /var/tmp/cfitsio-3.47.tar.gz
+    # cd -
+
+    #tempo2
+    rm -rf /tmp/tempo2
+    rm -rf /var/tmp/tempo2
+    
+    cd /
+    mkdir -p /var/tmp && cd /var/tmp && git clone https://bitbucket.org/psrsoft/tempo2.git /tmp/tempo2 && cd -
+    cd /tmp/tempo2
+    ./bootstrap
+    cd /tmp/tempo2 && ./configure --prefix=${TEMPO2} --with-tempo2-plug-dir=${TEMPO2}/plugins --enable-static --with-fftw3-dir=/usr/local/fftw --enable-shared --with-pic --x-libraries=/usr/lib/x86_64-linux-gnu F77=gfortran
+    make -j$(nproc)
+    make -j$(nproc) install
+    make -j$(nproc) plugins-install
+    cp -r T2runtime/* ${TEMPO2}
+    rm -rf /tmp/tempo2
+    cd /
+
+    apt-get clean
+    apt-get -y autoremove
+   
+%runscript
+    exec "$@"
